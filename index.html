@@ -95,8 +95,8 @@
     .badge{font-size:10px;padding:3px 8px}
     .kpis{position:sticky;top:0;z-index:20;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 -12px 12px;padding:6px 12px;background:var(--bg);border-bottom:1px solid var(--line)}
     .kpi{padding:7px 8px;border-radius:9px}
-    .kpi .label{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .kpi .value{font-size:16px}
+    .kpi .label{font-size:9px;line-height:1.2;min-height:22px;white-space:normal;overflow:visible;text-overflow:clip}
+    .kpi .value{font-size:16px;white-space:nowrap}
     .kpi .hint{display:none}
     .card{margin-bottom:12px}
     .hd,.bd{padding:10px 12px}
@@ -111,8 +111,7 @@
     .delta{padding:6px 8px;font-size:11px}
     .tipmini{display:none}
     #chart{height:210px;border-radius:8px}
-    #chart .lblbg,#chart .lbl{display:none}
-    #chart #grid text{font-size:22px}
+    #chart #grid text{font-size:20px}
     .jumps .btn{padding:3px 6px;font-size:10px}
     .basebox{padding:5px 7px;gap:5px}
     .basebox label{font-size:11px}
@@ -282,14 +281,19 @@ function winPer(score){
 const svg=$('#chart'), grid=$('#grid'), area=$('#area'), line=$('#line');
 const ha=$('#ha'), hb=$('#hb');
 function setHandle(g,s,color){
+  const narrow=window.innerWidth<=600;
+  const lw=narrow?184:118, lh=narrow?30:22, fs=narrow?24:11;
   const xx=x(s), yy=y(val(s));
   const vline=g.querySelector('.vline');
   vline.setAttribute('x1',xx); vline.setAttribute('x2',xx);
   const dot=g.querySelector('.dot'); dot.setAttribute('cx',xx); dot.setAttribute('cy',yy);
-  const bx=Math.max(L,Math.min(W-R-118,xx-59));
-  const bg=g.querySelector('.lblbg'); bg.setAttribute('x',bx); bg.setAttribute('y',T-2);
+  const bx=Math.max(L,Math.min(W-R-lw,xx-lw/2));
+  const bg=g.querySelector('.lblbg');
+  bg.setAttribute('x',bx); bg.setAttribute('y',T-2);
+  bg.setAttribute('width',lw); bg.setAttribute('height',lh);
   const label=g.querySelector('.lbl');
-  label.setAttribute('x',bx+59);
+  label.setAttribute('x',bx+lw/2); label.setAttribute('y',T+(narrow?19:13));
+  label.setAttribute('font-size',fs);
   label.textContent = s+' · '+(mode==='coef' ? combinedCoef(s)+'%' : fmt(shownPower(s)));
 }
 function rebuildCurve(){
@@ -454,6 +458,11 @@ function doQuery(){
 $('#qBtn').onclick=doQuery;
 $('#qScore').addEventListener('keydown',e=>{if(e.key==='Enter')doQuery();});
 
+let resizeTimer;
+window.addEventListener('resize',()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer=setTimeout(()=>{setHandle(ha,A);setHandle(hb,B);rebuildCurve();},80);
+});
 renderTabs(); refreshAll();
 </script>
 </body>
